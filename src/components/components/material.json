@@ -1,0 +1,26 @@
+{
+  "collectionName": "components_components_materials",
+  "info": {
+    "displayName": "Material"
+  },
+  "options": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "organizerProvided": {
+      "type": "boolean"
+    },
+    "file": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    }
+  },
+  "config": {}
+}

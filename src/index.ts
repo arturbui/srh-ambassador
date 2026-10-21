@@ -1,20 +1,22 @@
-// import type { Core } from '@strapi/strapi';
+import type { Core } from '@strapi/strapi';
+import { ensureLocales } from './bootstrap/locales';
+import { syncUsersPermissionsRoles } from './bootstrap/users-permissions-roles';
+import { syncAdminRoles } from './bootstrap/admin-roles';
+import { ensureDemoData } from './bootstrap/demo-accounts';
 
 export default {
-  /**
-   * An asynchronous register function that runs before
-   * your application is initialized.
-   *
-   * This gives you an opportunity to extend code.
-   */
-  register(/* { strapi }: { strapi: Core.Strapi } */) {},
+  register() {},
 
   /**
-   * An asynchronous bootstrap function that runs before
-   * your application gets started.
-   *
-   * This gives you an opportunity to set up your data model,
-   * run jobs, or perform some special logic.
+   * Runs on every server start (including autoReload restarts in
+   * development), so it must stay idempotent: it upserts locales and
+   * roles/permissions from code rather than requiring a one-off admin-panel
+   * setup step that would be lost on a fresh database.
    */
-  bootstrap(/* { strapi }: { strapi: Core.Strapi } */) {},
+  async bootstrap({ strapi }: { strapi: Core.Strapi }) {
+    await ensureLocales({ strapi });
+    await syncUsersPermissionsRoles({ strapi });
+    await syncAdminRoles({ strapi });
+    await ensureDemoData({ strapi });
+  },
 };

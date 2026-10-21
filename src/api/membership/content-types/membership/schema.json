@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "memberships",
+  "info": {
+    "singularName": "membership",
+    "pluralName": "memberships",
+    "displayName": "Membership"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "joinedDate": {
+      "type": "datetime"
+    },
+    "role": {
+      "type": "enumeration",
+      "enum": ["member", "leader"],
+      "default": "member"
+    },
+    "club": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::club.club",
+      "inversedBy": "memberships"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user"
+    }
+  }
+}
