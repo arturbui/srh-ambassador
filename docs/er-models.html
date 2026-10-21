@@ -1,0 +1,685 @@
+<title>SRH Ambassador — Data &amp; Access Model</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+  :root {
+    --paper: #eff1ec;
+    --surface: #ffffff;
+    --plate: #fbfaf6;
+    --ink: #1b2321;
+    --ink-soft: #56635c;
+    --line: #d6dad3;
+    --accent: #2f5d45;
+    --accent-warm: #a6742b;
+    --good: #2f7d5a;
+    --scoped: #a6742b;
+    --denied: #a5453a;
+    --shadow: 0 1px 2px rgba(27, 35, 33, 0.06), 0 8px 24px -12px rgba(27, 35, 33, 0.18);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #121614;
+      --surface: #1a201d;
+      --plate: #fbfaf6;
+      --ink: #e7eae5;
+      --ink-soft: #9faaa2;
+      --line: #2b332d;
+      --accent: #74c79b;
+      --accent-warm: #d9a254;
+      --good: #63b98c;
+      --scoped: #d9a254;
+      --denied: #e0796a;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #121614;
+    --surface: #1a201d;
+    --plate: #fbfaf6;
+    --ink: #e7eae5;
+    --ink-soft: #9faaa2;
+    --line: #2b332d;
+    --accent: #74c79b;
+    --accent-warm: #d9a254;
+    --good: #63b98c;
+    --scoped: #d9a254;
+    --denied: #e0796a;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+  }
+  :root[data-theme="light"] {
+    --paper: #eff1ec;
+    --surface: #ffffff;
+    --plate: #fbfaf6;
+    --ink: #1b2321;
+    --ink-soft: #56635c;
+    --line: #d6dad3;
+    --accent: #2f5d45;
+    --accent-warm: #a6742b;
+    --good: #2f7d5a;
+    --scoped: #a6742b;
+    --denied: #a5453a;
+    --shadow: 0 1px 2px rgba(27, 35, 33, 0.06), 0 8px 24px -12px rgba(27, 35, 33, 0.18);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  .display {
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+  }
+
+  .mono {
+    font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  h1, h2, h3 { text-wrap: balance; margin: 0; }
+
+  a { color: var(--accent); }
+
+  /* ---------- top bar ---------- */
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .topbar-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .brand {
+    font-family: Georgia, serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+
+  .brand .dim { color: var(--ink-soft); font-weight: 400; }
+
+  .pillnav {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .pillnav::-webkit-scrollbar { display: none; }
+
+  .pillnav a {
+    flex: 0 0 auto;
+    text-decoration: none;
+    color: var(--ink-soft);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .pillnav a:hover { color: var(--ink); border-color: var(--accent); }
+
+  /* ---------- shell ---------- */
+
+  .shell { max-width: 1080px; margin: 0 auto; padding: 40px 28px 80px; }
+
+  header.hero {
+    padding-bottom: 32px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  header.hero h1 {
+    font-size: clamp(1.7rem, 4vw, 2.4rem);
+    margin-bottom: 10px;
+  }
+
+  header.hero p.lede {
+    max-width: 62ch;
+    color: var(--ink-soft);
+    font-size: 1.05rem;
+  }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 24px;
+  }
+  .fact {
+    background: var(--surface);
+    padding: 14px 16px;
+  }
+  .fact .k {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  .fact .v { font-size: 0.92rem; }
+
+  /* ---------- model sections ---------- */
+
+  section.model {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 28px;
+    padding: 36px 0;
+    border-bottom: 1px solid var(--line);
+    scroll-margin-top: 70px;
+  }
+  @media (max-width: 780px) {
+    section.model { grid-template-columns: 1fr; }
+  }
+
+  .model-index {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .model-index .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--surface);
+    font-size: 0.7rem;
+  }
+
+  .model h2 { font-size: 1.5rem; margin-bottom: 10px; }
+  .model .desc { color: var(--ink-soft); margin-bottom: 16px; max-width: 60ch; }
+
+  .plate {
+    background: var(--plate);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 18px;
+    overflow-x: auto;
+  }
+  .plate pre.mermaid { margin: 0; }
+
+  .notes { padding-top: 4px; }
+  .notes h3 {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+  .notes ul { margin: 0; padding-left: 18px; }
+  .notes li { margin-bottom: 10px; font-size: 0.93rem; }
+  .notes li b { color: var(--ink); }
+
+  /* ---------- permissions ---------- */
+
+  section.perms { padding: 40px 0 0; scroll-margin-top: 70px; }
+  section.perms h2 { font-size: 1.5rem; margin-bottom: 6px; }
+  section.perms > .desc { color: var(--ink-soft); max-width: 68ch; margin-bottom: 24px; }
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+  }
+
+  table.matrix {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 640px;
+    font-size: 0.9rem;
+  }
+  table.matrix caption {
+    text-align: left;
+    font-weight: 700;
+    padding: 14px 16px 0;
+    caption-side: top;
+  }
+  table.matrix th, table.matrix td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+  table.matrix thead th {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    border-bottom: 2px solid var(--line);
+  }
+  table.matrix tbody th {
+    font-weight: 600;
+    white-space: nowrap;
+    position: sticky;
+    left: 0;
+    background: var(--surface);
+  }
+  table.matrix tbody tr:last-child td,
+  table.matrix tbody tr:last-child th { border-bottom: none; }
+
+  .chip {
+    display: inline-block;
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 0.78rem;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin: 0 3px 3px 0;
+    border: 1px solid transparent;
+  }
+  .chip.r { color: var(--ink-soft); background: color-mix(in srgb, var(--ink-soft) 12%, transparent); }
+  .chip.c, .chip.u, .chip.d { color: var(--good); background: color-mix(in srgb, var(--good) 14%, transparent); }
+  .chip.scoped { color: var(--scoped); background: color-mix(in srgb, var(--scoped) 16%, transparent); }
+  .chip.none { color: var(--denied); background: color-mix(in srgb, var(--denied) 14%, transparent); }
+
+  .footnote { font-size: 0.85rem; color: var(--ink-soft); }
+  .footnote sup { color: var(--scoped); font-weight: 700; }
+
+  .policy-list {
+    display: grid;
+    gap: 10px;
+    margin: 18px 0 36px;
+  }
+  .policy-list .row {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--line);
+    font-size: 0.9rem;
+  }
+  @media (max-width: 620px) {
+    .policy-list .row { grid-template-columns: 1fr; gap: 4px; }
+  }
+  .policy-list code {
+    font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+    font-size: 0.85rem;
+    color: var(--accent);
+  }
+
+  footer.colophon {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-soft);
+    font-size: 0.82rem;
+  }
+</style>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">SRH Ambassador <span class="dim">/ data &amp; access model</span></div>
+    <nav class="pillnav">
+      <a href="#model-1">1 · Clubs</a>
+      <a href="#model-2">2 · Events</a>
+      <a href="#model-3">3 · News</a>
+      <a href="#model-4">4 · Users &amp; Roles</a>
+      <a href="#permissions">Permission matrix</a>
+    </nav>
+  </div>
+</div>
+
+<div class="shell">
+
+  <header class="hero">
+    <h1 class="display">Four ER models, one rights system</h1>
+    <p class="lede">
+      This is the data model behind the SRH Ambassador CMS (Strapi 5), split into the four
+      domains it's actually built from, plus the roles-and-rights layer that governs who may
+      read, write, or approve what — across both the public API and the admin back office.
+    </p>
+    <div class="facts">
+      <div class="fact"><div class="k">Content types</div><div class="v">7 collection types across 4 domains</div></div>
+      <div class="fact"><div class="k">Locales</div><div class="v mono">en · de-DE</div></div>
+      <div class="fact"><div class="k">Public-API roles</div><div class="v">Public · Authenticated · Club Leader · Content Editor</div></div>
+      <div class="fact"><div class="k">Admin-panel roles</div><div class="v">Super Admin · Editor · Author · Club Administrator · News Moderator</div></div>
+    </div>
+  </header>
+
+  <!-- MODEL 1 -->
+  <section class="model" id="model-1">
+    <div>
+      <div class="model-index"><span class="num">1</span> Clubs, categories &amp; documents</div>
+      <h2>The club registry</h2>
+      <p class="desc">
+        Every club sits under one category and can hold a set of uploaded documents
+        (statutes, membership forms, handouts) with their own visibility tier.
+      </p>
+      <div class="plate">
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#fbfaf6','primaryTextColor':'#1b2321','primaryBorderColor':'#2f5d45','lineColor':'#2f5d45','secondaryColor':'#efebde','tertiaryColor':'#fbfaf6','fontFamily':'Georgia, serif'}}}%%
+erDiagram
+    CATEGORY ||--o{ CLUB : groups
+    CLUB ||--o{ DOCUMENT : owns
+    CATEGORY {
+        string name
+        text description
+    }
+    CLUB {
+        string name
+        blocks description
+        string hostName
+        enum approvalStatus "pending, approved, rejected"
+    }
+    DOCUMENT {
+        string title
+        text description
+        media file
+        enum visibility "public, members, leaders"
+    }
+        </pre>
+      </div>
+    </div>
+    <div class="notes">
+      <h3>Reading this model</h3>
+      <ul>
+        <li><b>Approval is a gate, not a field.</b> A club is always created with <code class="mono">approvalStatus = pending</code>; the public API refuses to accept any other value on create or update, so a club can only move to <code class="mono">approved</code> from the admin panel.</li>
+        <li><b>Documents carry their own visibility</b> (<code class="mono">public / members / leaders</code>), independent of the club's own approval state — a pending club's leader can still stage internal paperwork before launch.</li>
+        <li>A club also anchors <a href="#model-2">Activities</a> and <a href="#model-4">Memberships</a>, shown in their own models below.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- MODEL 2 -->
+  <section class="model" id="model-2">
+    <div>
+      <div class="model-index"><span class="num">2</span> Events &amp; activities</div>
+      <h2>Two kinds of "happening"</h2>
+      <p class="desc">
+        Club activities are recurring, room-booked sessions; events are one-off and hosted
+        directly by a user, with their own attachable materials.
+      </p>
+      <div class="plate">
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#fbfaf6','primaryTextColor':'#1b2321','primaryBorderColor':'#2f5d45','lineColor':'#2f5d45','secondaryColor':'#efebde','tertiaryColor':'#fbfaf6','fontFamily':'Georgia, serif'}}}%%
+erDiagram
+    CLUB ||--o{ ACTIVITY : runs
+    USER ||--o{ EVENT : hosts
+    EVENT ||--o{ MATERIAL : attaches
+    ACTIVITY {
+        string title
+        blocks description
+        datetime date
+        string location
+        string building
+        string room
+        integer capacity
+        text timetable
+    }
+    EVENT {
+        string name
+    }
+    MATERIAL {
+        string name
+        boolean organizerProvided
+        media file
+    }
+    USER {
+        string username
+        string email
+    }
+        </pre>
+      </div>
+    </div>
+    <div class="notes">
+      <h3>Reading this model</h3>
+      <ul>
+        <li><b>Activities are club-scoped</b>; the schema has no Club↔Event link, so a general campus event and a club's recurring activity are deliberately tracked as separate things.</li>
+        <li><b>Ownership is forced server-side.</b> On create, <code class="mono">event.host</code> is always set to the requester's own account — a client can never assign an event to someone else.</li>
+        <li>Material's <code class="mono">file</code> is a real upload (image, video, audio, or document), repeatable per event.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- MODEL 3 -->
+  <section class="model" id="model-3">
+    <div>
+      <div class="model-index"><span class="num">3</span> News &amp; content</div>
+      <h2>Editorial content</h2>
+      <p class="desc">
+        The simplest model: an article, written by one user, tagged as an announcement or a report.
+      </p>
+      <div class="plate">
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#fbfaf6','primaryTextColor':'#1b2321','primaryBorderColor':'#2f5d45','lineColor':'#2f5d45','secondaryColor':'#efebde','tertiaryColor':'#fbfaf6','fontFamily':'Georgia, serif'}}}%%
+erDiagram
+    USER ||--o{ NEWS_ARTICLE : authors
+    NEWS_ARTICLE {
+        string title
+        enum category "announcement, report"
+        blocks content
+    }
+    USER {
+        string username
+        string email
+    }
+        </pre>
+      </div>
+    </div>
+    <div class="notes">
+      <h3>Reading this model</h3>
+      <ul>
+        <li><b>Images live inside the article</b> — <code class="mono">content</code> is a Strapi Blocks field, so inline images are embedded in the rich-text tree rather than a separate media relation.</li>
+        <li><b>Authorship is forced server-side</b> the same way event hosting is: <code class="mono">author</code> is always the requester, never client-supplied.</li>
+        <li>Only a <a href="#permissions">Content Editor</a> (or admin-panel staff) can create, edit, or delete an article — a plain authenticated user can only read.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- MODEL 4 -->
+  <section class="model" id="model-4">
+    <div>
+      <div class="model-index"><span class="num">4</span> Users, roles &amp; permissions</div>
+      <h2>Two parallel rights systems</h2>
+      <p class="desc">
+        Strapi keeps back-office staff and public-facing users in entirely separate tables,
+        each with its own role model. "Club leader" isn't a role at all — it's read off
+        <code class="mono">membership.role</code>, per club.
+      </p>
+      <div class="plate">
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#fbfaf6','primaryTextColor':'#1b2321','primaryBorderColor':'#2f5d45','lineColor':'#2f5d45','secondaryColor':'#efebde','tertiaryColor':'#fbfaf6','fontFamily':'Georgia, serif'}}}%%
+erDiagram
+    CLUB ||--o{ MEMBERSHIP : roster
+    USER ||--o{ MEMBERSHIP : joins
+    UP_ROLE ||--o{ USER : assigned
+    ADMIN_ROLE ||--o{ ADMIN_USER : assigned
+
+    MEMBERSHIP {
+        datetime joinedDate
+        enum role "member, leader"
+    }
+    USER {
+        string username
+        string email
+    }
+    UP_ROLE {
+        string name "Public, Authenticated, Club Leader, Content Editor"
+        string type
+    }
+    ADMIN_USER {
+        string firstname
+        string lastname
+        string email
+    }
+    ADMIN_ROLE {
+        string name "Super Admin, Editor, Author, Club Administrator, News Moderator"
+        string code
+    }
+        </pre>
+      </div>
+    </div>
+    <div class="notes">
+      <h3>Reading this model</h3>
+      <ul>
+        <li><b>USER</b> and <b>ADMIN_USER</b> are different tables (<code class="mono">plugin::users-permissions.user</code> vs <code class="mono">admin::user</code>) — a club leader logging into the public API and a staff member logging into <code class="mono">/admin</code> are unrelated accounts.</li>
+        <li><b>Leadership is contextual, not a role.</b> One person can be <code class="mono">leader</code> of Robotics Club and a plain <code class="mono">member</code> of Chess Club at the same time — every club-scoped policy checks <code class="mono">membership.role</code> for that specific club, not a global flag.</li>
+        <li>The full action-by-action breakdown for both role systems is the permission matrix below.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- PERMISSIONS -->
+  <section class="perms" id="permissions">
+    <h2 class="display">Permission matrix</h2>
+    <p class="desc">
+      What each Users-Permissions role can do on the public REST API, and what each
+      admin-panel role can do in the Content Manager. A <span class="chip scoped">scoped</span>
+      chip means the static permission only grants the action conditionally — enforced by a
+      row-level policy, not by the role alone.
+    </p>
+
+    <div class="table-wrap">
+      <table class="matrix">
+        <caption>Public API — Users-Permissions roles</caption>
+        <thead>
+          <tr><th>Content type</th><th>Public</th><th>Authenticated</th><th>Club Leader</th><th>Content Editor</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>Category</th>
+            <td><span class="chip r">read</span></td>
+            <td><span class="chip r">read</span></td>
+            <td><span class="chip r">read</span></td>
+            <td><span class="chip r">read</span></td>
+          </tr>
+          <tr>
+            <th>Club</th>
+            <td><span class="chip r">read</span></td>
+            <td><span class="chip r">read</span> <span class="chip c">create</span></td>
+            <td><span class="chip r">read</span> <span class="chip c">create</span> <span class="chip scoped">update¹</span></td>
+            <td><span class="chip r">read</span> <span class="chip c">create</span></td>
+          </tr>
+          <tr>
+            <th>Activity</th>
+            <td><span class="chip r">read</span></td>
+            <td><span class="chip r">read</span></td>
+            <td><span class="chip r">read</span> <span class="chip scoped">create²</span> <span class="chip scoped">update²</span> <span class="chip scoped">delete²</span></td>
+            <td><span class="chip r">read</span></td>
+          </tr>
+          <tr>
+            <th>Event</th>
+            <td><span class="chip r">read</span></td>
+            <td><span class="chip r">read</span> <span class="chip c">create</span> <span class="chip scoped">update³</span> <span class="chip scoped">delete³</span></td>
+            <td><span class="chip r">read</span> <span class="chip c">create</span> <span class="chip scoped">update³</span> <span class="chip scoped">delete³</span></td>
+            <td><span class="chip r">read</span> <span class="chip c">create</span> <span class="chip scoped">update³</span> <span class="chip scoped">delete³</span></td>
+          </tr>
+          <tr>
+            <th>News Article</th>
+            <td><span class="chip r">read</span></td>
+            <td><span class="chip r">read</span></td>
+            <td><span class="chip r">read</span></td>
+            <td><span class="chip r">read</span> <span class="chip c">create</span> <span class="chip scoped">update⁴</span> <span class="chip scoped">delete⁴</span></td>
+          </tr>
+          <tr>
+            <th>Document</th>
+            <td><span class="chip scoped">read⁵</span></td>
+            <td><span class="chip scoped">read⁵</span></td>
+            <td><span class="chip scoped">read⁵</span> <span class="chip scoped">create²</span> <span class="chip scoped">update²</span> <span class="chip scoped">delete²</span></td>
+            <td><span class="chip scoped">read⁵</span></td>
+          </tr>
+          <tr>
+            <th>Membership</th>
+            <td><span class="chip none">none</span></td>
+            <td><span class="chip scoped">read⁶</span> <span class="chip c">create</span> <span class="chip scoped">delete⁶</span></td>
+            <td><span class="chip scoped">read⁶</span> <span class="chip c">create</span> <span class="chip scoped">update⁷</span> <span class="chip scoped">delete⁶</span></td>
+            <td><span class="chip scoped">read⁶</span> <span class="chip c">create</span> <span class="chip scoped">delete⁶</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="footnote">
+      "Club Leader" and "Content Editor" are custom roles, granted manually per user once they
+      lead a club or join the ambassador/PR team — they layer on top of, and include,
+      everything Authenticated can do.
+    </p>
+
+    <div class="table-wrap" style="margin-top:28px;">
+      <table class="matrix">
+        <caption>Admin panel — back-office roles</caption>
+        <thead>
+          <tr><th>Role</th><th>Scope</th><th>Content types</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>Super Admin <span class="footnote">(stock)</span></th>
+            <td>Everything, incl. Settings &amp; user management</td>
+            <td>all</td>
+          </tr>
+          <tr>
+            <th>Editor <span class="footnote">(stock)</span></th>
+            <td>Full manage + publish, including other people's drafts</td>
+            <td>all</td>
+          </tr>
+          <tr>
+            <th>Author <span class="footnote">(stock)</span></th>
+            <td>Manage own items only; cannot publish</td>
+            <td>all</td>
+          </tr>
+          <tr>
+            <th>Club Administrator <span class="footnote">(custom)</span></th>
+            <td>Full manage + publish, incl. setting <code class="mono">approvalStatus</code></td>
+            <td class="mono">category, club, activity, membership, document, event</td>
+          </tr>
+          <tr>
+            <th>News Moderator <span class="footnote">(custom)</span></th>
+            <td>Full manage + publish</td>
+            <td class="mono">news-article</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:36px; font-size:1rem;">Row-level policies referenced above</h3>
+    <div class="policy-list">
+      <div class="row"><code>¹ is-club-leader</code><span>Club update — only if the requester has a <span class="mono">leader</span> membership on that specific club.</span></div>
+      <div class="row"><code>² is-activity-club-leader / is-document-club-leader</code><span>Activity and Document create/update/delete — same leader check, resolved via the record's own club (or the club named in the request body, on create).</span></div>
+      <div class="row"><code>³ is-owner</code><span>Event update/delete — only the event's own host.</span></div>
+      <div class="row"><code>⁴ is-author</code><span>News Article update/delete — only the article's own author.</span></div>
+      <div class="row"><code>⁵ document visibility</code><span>Enforced in the controller, not a policy: <span class="mono">public</span> documents are open to everyone; <span class="mono">members</span> requires a membership in that club; <span class="mono">leaders</span> requires a leader membership; the uploader can always see their own.</span></div>
+      <div class="row"><code>⁶ is-self-or-club-leader</code><span>Membership read/delete — a member can see and leave their own membership; a club's leader can see and remove any membership on that club.</span></div>
+      <div class="row"><code>⁷ is-membership-club-leader</code><span>Membership update (e.g. promoting a member to leader) — only that club's own leader.</span></div>
+    </div>
+  </section>
+
+  <footer class="colophon">
+    Reflects <code class="mono">srh-ambassador/src/api/*</code> and the RBAC seed in
+    <code class="mono">srh-ambassador/src/bootstrap/*</code>. IDs shown as <code class="mono">documentId</code>
+    per Strapi 5's Document Service API.
+  </footer>
+
+</div>
